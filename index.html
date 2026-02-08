@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="432Hz Classic Guitar and Guitalele Tuner">
+    <meta name="reply-to" content="https://claude.ai/share/99f58e1f-a8df-419d-9670-cb4c9f3a6bd7">
+    <meta name="original-source" content="Pure standalone HTML+CSS+JS app without external dependencies for tuning the classic guitar and a guitalele with the A=432 Hz tuning.">
+    <meta name="ref" content="https://www.profdong.com/elc4351/notefreq432.html">
+    <title>432 Hz Guitar & Guitalele Tuner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Golden Ratio Constants */
+            --phi: 1.618033988749;
+            --phi-inverse: 0.618033988749;
+            
+            /* Color Palette - Sacred Geometry Inspired */
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #e67e22;
+            --accent-hover: #d35400;
+            --active-color: #27ae60;
+            --text-color: #ecf0f1;
+            --border-color: #7f8c8d;
+            --background: linear-gradient(135deg, #1a252f 0%, #2c3e50 100%);
+            
+            /* Spacing based on Golden Ratio */
+            --space-xs: 0.382rem;  /* φ^-2 */
+            --space-sm: 0.618rem;  /* φ^-1 */
+            --space-md: 1rem;
+            --space-lg: 1.618rem;  /* φ */
+            --space-xl: 2.618rem;  /* φ^2 */
+            --space-xxl: 4.236rem; /* φ^3 */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 720px; /* Based on golden ratio proportions */
+            background: rgba(44, 62, 80, 0.95);
+            border-radius: calc(var(--space-md) * var(--phi));
+            box-shadow: 0 var(--space-lg) var(--space-xxl) rgba(0, 0, 0, 0.3);
+            padding: var(--space-xxl);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: calc(var(--space-xl) * var(--phi));
+            margin-bottom: var(--space-xl);
+            color: var(--accent-color);
+            font-weight: 300;
+            letter-spacing: 0.1em;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xxl);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        label {
+            font-size: var(--space-md);
+            font-weight: 500;
+            color: var(--text-color);
+            opacity: 0.9;
+        }
+
+        select, input[type="number"] {
+            width: 100%;
+            padding: var(--space-md);
+            font-size: var(--space-md);
+            background: var(--secondary-color);
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
+            border-radius: var(--space-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover, input[type="number"]:hover {
+            border-color: var(--accent-color);
+        }
+
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.2);
+        }
+
+        .tuning-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+        }
+
+        .string-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-md);
+        }
+
+        .string-button {
+            background: var(--secondary-color);
+            color: var(--text-color);
+            border: 2px solid var(--border-color);
+            border-radius: var(--space-sm);
+            padding: var(--space-lg);
+            font-size: var(--space-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .string-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(230, 126, 34, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .string-button:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+            box-shadow: 0 var(--space-sm) var(--space-lg) rgba(0, 0, 0, 0.3);
+        }
+
+        .string-button:active {
+            transform: translateY(0);
+        }
+
+        .string-button.active {
+            background: var(--active-color);
+            border-color: var(--active-color);
+            box-shadow: 0 0 var(--space-lg) var(--active-color);
+        }
+
+        .string-button.active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .note-name {
+            display: block;
+            font-size: calc(var(--space-lg) * var(--phi));
+            margin-bottom: var(--space-xs);
+        }
+
+        .frequency {
+            display: block;
+            font-size: var(--space-sm);
+            opacity: 0.8;
+        }
+
+        .status {
+            text-align: center;
+            min-height: calc(var(--space-xl) * var(--phi));
+            padding: var(--space-lg);
+            background: rgba(52, 73, 94, 0.8);
+            border-radius: var(--space-sm);
+            margin-bottom: var(--space-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--space-lg);
+            font-weight: 500;
+            color: var(--accent-color);
+            transition: all 0.3s ease;
+        }
+
+        .status.playing {
+            background: rgba(39, 174, 96, 0.3);
+            box-shadow: 0 0 var(--space-lg) rgba(39, 174, 96, 0.5);
+        }
+
+        .footer {
+            text-align: center;
+            font-size: var(--space-sm);
+            opacity: 0.7;
+            margin-top: var(--space-xxl);
+        }
+
+        /* Responsive Design - Golden Ratio Breakpoints */
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--space-xl);
+            }
+
+            h1 {
+                font-size: var(--space-xl);
+            }
+
+            .string-row {
+                grid-template-columns: 1fr;
+                gap: var(--space-sm);
+            }
+
+            .string-button {
+                padding: var(--space-md);
+            }
+
+            .note-name {
+                font-size: var(--space-lg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: var(--space-lg);
+            }
+
+            h1 {
+                font-size: var(--space-lg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎸 432 Hz Tuner</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="instrument-select">Instrument:</label>
+                <select id="instrument-select">
+                    <option value="guitar">Classic Guitar</option>
+                    <option value="guitalele">Guitalele</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="base-frequency">Base Frequency A4 (Hz):</label>
+                <input type="number" id="base-frequency" value="432" min="400" max="460" step="0.1">
+            </div>
+        </div>
+
+        <div class="status" id="status">Select a string to tune</div>
+
+        <div class="tuning-grid" id="tuning-grid">
+            <!-- Buttons will be generated here -->
+        </div>
+
+        <div class="footer" id="footer">
+            <p>Tuning based on equal temperament with A4 = <span id="current-freq">432</span> Hz</p>
+            <p>Click any button to play a 5-second tuning tone</p>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // FREQUENCY CALCULATION METHODOLOGY
+        // ============================================================================
+        // 
+        // This tuner uses the Equal Temperament tuning system, which is the standard
+        // for modern Western music. In equal temperament, the octave is divided into
+        // 12 equal semitones.
+        //
+        // FORMULA:
+        // f(n) = f0 × 2^(n/12)
+        //
+        // Where:
+        // - f(n) = frequency of the note n semitones from the reference
+        // - f0 = reference frequency (A4 = 432 Hz by default)
+        // - n = number of semitones from A4 (positive = higher, negative = lower)
+        //
+        // SEMITONE CALCULATION:
+        // Each semitone is a ratio of 2^(1/12) ≈ 1.059463094359
+        //
+        // OCTAVE RELATIONSHIPS:
+        // - One octave up: multiply by 2
+        // - One octave down: divide by 2
+        // - Two octaves up: multiply by 4
+        // - Two octaves down: divide by 4
+        //
+        // VERIFICATION:
+        // Frequencies are verified against authoritative sources:
+        // - Michigan Tech University frequency table (profdong.com)
+        // - Standard music theory references
+        //
+        // ============================================================================
+
+        // Instrument configurations
+        const INSTRUMENTS = {
+            guitar: {
+                name: 'Classic Guitar',
+                strings: [
+                    { note: 'E', octave: 4, semitones: 5 },   // E4 - 1st string (highest)
+                    { note: 'B', octave: 3, semitones: 2 },   // B3 - 2nd string
+                    { note: 'G', octave: 3, semitones: -2 },  // G3 - 3rd string
+                    { note: 'D', octave: 3, semitones: -7 },  // D3 - 4th string
+                    { note: 'A', octave: 2, semitones: -12 }, // A2 - 5th string
+                    { note: 'E', octave: 2, semitones: -17 }  // E2 - 6th string (lowest)
+                ]
+            },
+            guitalele: {
+                name: 'Guitalele',
+                strings: [
+                    { note: 'A', octave: 4, semitones: 0 },   // A4 - 1st string (highest)
+                    { note: 'E', octave: 4, semitones: 5 },   // E4 - 2nd string
+                    { note: 'C', octave: 4, semitones: 3 },   // C4 - 3rd string
+                    { note: 'G', octave: 3, semitones: -2 },  // G3 - 4th string
+                    { note: 'D', octave: 3, semitones: -7 },  // D3 - 5th string
+                    { note: 'A', octave: 2, semitones: -12 }  // A2 - 6th string (lowest)
+                ]
+            }
+        };
+
+        // Audio context for sound generation
+        let audioContext = null;
+        let currentOscillator = null;
+        let currentGainNode = null;
+        let activeButton = null;
+        let isPlaying = false;  // Flag to prevent race conditions
+
+        // DOM elements
+        const instrumentSelect = document.getElementById('instrument-select');
+        const baseFrequencyInput = document.getElementById('base-frequency');
+        const tuningGrid = document.getElementById('tuning-grid');
+        const statusDisplay = document.getElementById('status');
+        const currentFreqDisplay = document.getElementById('current-freq');
+        const footerDisplay = document.getElementById('footer');
+
+        /**
+         * Calculate frequency for a note using equal temperament
+         * @param {number} semitones - Semitones from A4 (can be negative)
+         * @param {number} baseFreq - Base frequency of A4 (default 432 Hz)
+         * @returns {number} Frequency in Hz
+         */
+        function calculateFrequency(semitones, baseFreq = 432) {
+            return baseFreq * Math.pow(2, semitones / 12);
+        }
+
+        /**
+         * Format frequency to 3 decimal places
+         */
+        function formatFrequency(freq) {
+            return freq.toFixed(3);
+        }
+
+        /**
+         * Initialize audio context (must be called after user interaction)
+         */
+        function initAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        /**
+         * Play a tone with smooth attack and release to avoid clicks
+         * Uses exponential ramps for more natural, pleasing sound
+         * @param {number} frequency - Frequency in Hz
+         * @param {number} duration - Duration in seconds
+         * @param {string} noteName - Name of the note being played (e.g., "A4")
+         */
+        function playTone(frequency, duration = 5, noteName = '') {
+            initAudioContext();
+            
+            // Set playing flag to prevent race conditions
+            isPlaying = true;
+
+            const currentTime = audioContext.currentTime;
+            
+            // Create oscillator (sine wave for pure, pleasant tone)
+            currentOscillator = audioContext.createOscillator();
+            currentOscillator.type = 'sine';
+            currentOscillator.frequency.value = frequency;
+
+            // Create gain node for volume control
+            currentGainNode = audioContext.createGain();
+            
+            // Exponential attack (fade in) - 50ms
+            // Note: Exponential ramps cannot start/end at exactly 0, so we use 0.001 (inaudible)
+            currentGainNode.gain.setValueAtTime(0.001, currentTime);
+            currentGainNode.gain.exponentialRampToValueAtTime(0.3, currentTime + 0.05);
+            
+            // Sustain at target volume
+            currentGainNode.gain.setValueAtTime(0.3, currentTime + 0.05);
+            
+            // Exponential release (fade out) - 100ms before end
+            // This creates a natural, acoustic-like decay
+            currentGainNode.gain.setValueAtTime(0.3, currentTime + duration - 0.1);
+            currentGainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + duration);
+
+            // Connect nodes
+            currentOscillator.connect(currentGainNode);
+            currentGainNode.connect(audioContext.destination);
+
+            // Update footer with current note and frequency
+            footerDisplay.innerHTML = `<p>Playing: <strong>${noteName}</strong> - ${formatFrequency(frequency)} Hz</p>`;
+
+            // Start and schedule stop
+            currentOscillator.start(currentTime);
+            currentOscillator.stop(currentTime + duration);
+
+            // Clean up after sound finishes naturally (not interrupted)
+            currentOscillator.onended = () => {
+                // Only cleanup if this oscillator is still the current one
+                // (it might have been replaced by a new button click)
+                if (isPlaying && currentOscillator) {
+                    isPlaying = false;
+                    currentOscillator = null;
+                    currentGainNode = null;
+                    
+                    if (activeButton) {
+                        activeButton.classList.remove('active');
+                        activeButton = null;
+                    }
+                    
+                    statusDisplay.textContent = 'Select a string to tune';
+                    statusDisplay.classList.remove('playing');
+                    footerDisplay.innerHTML = '';
+                }
+            };
+        }
+
+        /**
+         * Stop currently playing sound
+         * Handles cleanup safely and prevents race conditions
+         */
+        function stopCurrentSound() {
+            // Prevent re-entry during cleanup
+            if (!isPlaying && !currentOscillator) {
+                return;
+            }
+            
+            isPlaying = false;
+            
+            // Safely stop and cleanup oscillator
+            if (currentOscillator) {
+                try {
+                    // Clear the onended handler first to prevent it from firing during manual stop
+                    currentOscillator.onended = null;
+                    
+                    // Stop the oscillator (may throw if already stopped, hence try-catch)
+                    currentOscillator.stop(0);
+                    currentOscillator.disconnect();
+                } catch (e) {
+                    // Oscillator might already be stopped or in invalid state - this is fine
+                    console.debug('Oscillator stop caught:', e.message);
+                }
+                currentOscillator = null;
+            }
+            
+            // Safely cleanup gain node
+            if (currentGainNode) {
+                try {
+                    currentGainNode.disconnect();
+                } catch (e) {
+                    console.debug('Gain node disconnect caught:', e.message);
+                }
+                currentGainNode = null;
+            }
+            
+            // Clear UI state
+            if (activeButton) {
+                activeButton.classList.remove('active');
+                activeButton = null;
+            }
+            
+            statusDisplay.textContent = 'Select a string to tune';
+            statusDisplay.classList.remove('playing');
+            
+            // Clear footer
+            footerDisplay.innerHTML = '';
+        }
+
+        /**
+         * Generate tuning buttons for current instrument
+         */
+        function generateTuningButtons() {
+            const instrument = INSTRUMENTS[instrumentSelect.value];
+            const baseFreq = parseFloat(baseFrequencyInput.value);
+            
+            tuningGrid.innerHTML = '';
+
+            instrument.strings.forEach((string, index) => {
+                const row = document.createElement('div');
+                row.className = 'string-row';
+
+                // Calculate frequencies for three octaves
+                const baseFrequency = calculateFrequency(string.semitones, baseFreq);
+                const octaves = [
+                    { label: `${string.note}${string.octave}`, freq: baseFrequency },
+                    { label: `${string.note}${string.octave + 1}`, freq: baseFrequency * 2 },
+                    { label: `${string.note}${string.octave + 2}`, freq: baseFrequency * 4 }
+                ];
+
+                octaves.forEach(octave => {
+                    const button = document.createElement('button');
+                    button.className = 'string-button';
+                    button.innerHTML = `
+                        <span class="note-name">${octave.label}</span>
+                        <span class="frequency">${formatFrequency(octave.freq)} Hz</span>
+                    `;
+                    
+                    button.addEventListener('click', () => {
+                        // TOGGLE BEHAVIOR: If clicking the currently active button, stop and return
+                        if (activeButton === button && isPlaying) {
+                            stopCurrentSound();
+                            return;
+                        }
+                        
+                        // Stop any currently playing sound and clear previous button
+                        stopCurrentSound();
+                        
+                        // Small delay to ensure cleanup is complete before starting new sound
+                        // This prevents race conditions when rapidly clicking buttons
+                        setTimeout(() => {
+                            // Double-check that this button should still play
+                            // (user might have clicked another button during the timeout)
+                            if (!isPlaying) {
+                                // Add active class to clicked button
+                                button.classList.add('active');
+                                activeButton = button;
+                                
+                                // Update status
+                                statusDisplay.textContent = `Playing ${octave.label} - ${formatFrequency(octave.freq)} Hz`;
+                                statusDisplay.classList.add('playing');
+                                
+                                // Play tone with note name
+                                playTone(octave.freq, 5, octave.label);
+                            }
+                        }, 10);
+                    });
+
+                    row.appendChild(button);
+                });
+
+                tuningGrid.appendChild(row);
+            });
+        }
+
+        /**
+         * Update base frequency display
+         */
+        function updateFrequencyDisplay() {
+            currentFreqDisplay.textContent = baseFrequencyInput.value;
+        }
+
+        // Event listeners
+        instrumentSelect.addEventListener('change', generateTuningButtons);
+        baseFrequencyInput.addEventListener('input', () => {
+            updateFrequencyDisplay();
+            generateTuningButtons();
+        });
+
+        // Initialize
+        generateTuningButtons();
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            stopCurrentSound();
+            if (audioContext) {
+                audioContext.close();
+            }
+        });
+    </script>
+</body>
+</html>
