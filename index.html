@@ -316,23 +316,23 @@
             guitar: {
                 name: 'Classic Guitar',
                 strings: [
-                    { note: 'E', octave: 4, semitones: 5 },   // E4 - 1st string (highest)
-                    { note: 'B', octave: 3, semitones: 2 },   // B3 - 2nd string
-                    { note: 'G', octave: 3, semitones: -2 },  // G3 - 3rd string
-                    { note: 'D', octave: 3, semitones: -7 },  // D3 - 4th string
-                    { note: 'A', octave: 2, semitones: -12 }, // A2 - 5th string
-                    { note: 'E', octave: 2, semitones: -17 }  // E2 - 6th string (lowest)
+                    { note: 'E', octave: 4, semitones: -5 },   // E4 - 1st string (highest): 432 × 2^(-5/12) = 323.63 Hz
+                    { note: 'B', octave: 3, semitones: -10 },  // B3 - 2nd string: 432 × 2^(-10/12) = 242.45 Hz
+                    { note: 'G', octave: 3, semitones: -14 },  // G3 - 3rd string: 432 × 2^(-14/12) = 192.43 Hz
+                    { note: 'D', octave: 3, semitones: -19 },  // D3 - 4th string: 432 × 2^(-19/12) = 144.16 Hz
+                    { note: 'A', octave: 2, semitones: -24 },  // A2 - 5th string: 432 × 2^(-24/12) = 108.00 Hz
+                    { note: 'E', octave: 2, semitones: -29 }   // E2 - 6th string (lowest): 432 × 2^(-29/12) = 80.91 Hz
                 ]
             },
             guitalele: {
                 name: 'Guitalele',
                 strings: [
-                    { note: 'A', octave: 4, semitones: 0 },   // A4 - 1st string (highest)
-                    { note: 'E', octave: 4, semitones: 5 },   // E4 - 2nd string
-                    { note: 'C', octave: 4, semitones: 3 },   // C4 - 3rd string
-                    { note: 'G', octave: 3, semitones: -2 },  // G3 - 4th string
-                    { note: 'D', octave: 3, semitones: -7 },  // D3 - 5th string
-                    { note: 'A', octave: 2, semitones: -12 }  // A2 - 6th string (lowest)
+                    { note: 'A', octave: 4, semitones: 0 },    // A4 - 1st string (highest): 432 Hz
+                    { note: 'E', octave: 4, semitones: -5 },   // E4 - 2nd string: 432 × 2^(-5/12) = 323.63 Hz
+                    { note: 'C', octave: 4, semitones: -9 },   // C4 - 3rd string: 432 × 2^(-9/12) = 256.87 Hz
+                    { note: 'G', octave: 3, semitones: -14 },  // G3 - 4th string: 432 × 2^(-14/12) = 192.43 Hz
+                    { note: 'D', octave: 3, semitones: -19 },  // D3 - 5th string: 432 × 2^(-19/12) = 144.16 Hz
+                    { note: 'A', octave: 2, semitones: -24 }   // A2 - 6th string (lowest): 432 × 2^(-24/12) = 108.00 Hz
                 ]
             }
         };
@@ -439,7 +439,7 @@
                         activeButton = null;
                     }
                     
-                    statusDisplay.textContent = '';
+                    statusDisplay.textContent = 'Select a string to tune';
                     statusDisplay.classList.remove('playing');
                     footerDisplay.innerHTML = '';
                 }
@@ -490,7 +490,7 @@
                 activeButton = null;
             }
             
-            statusDisplay.textContent = '';
+            statusDisplay.textContent = 'Select a string to tune';
             statusDisplay.classList.remove('playing');
             
             // Clear footer
